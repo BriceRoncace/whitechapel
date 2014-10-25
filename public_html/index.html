@@ -393,13 +393,29 @@
       $("#location-markers .marker").click(setMurderLocationOrTurnOffMarker);
     });
     
+    function resetJackTracking() {
+      $(".red-marker").removeClass("red-marker").addClass('invisible-marker');
+      setCurrentTimeVal("");
+      setMurderLocation("");
+      setMurderTimeId("");
+      $("#murder-time-link").removeClass("hide");
+      $("#murder-location-link").addClass("hide");
+      $("#murder-next-link").addClass("hide");
+    }
+    
     function setMurderLocationOrTurnOffMarker() {
       if (isMurderTimeSet()) {
         if (!isMurderLocationSet()) {
           selectMurderLocation($(this));
         }
         else {
-          console.log("attempt to deselect marker");
+          var $marker = $(this);
+          if ($marker.hasClass("rank-off")) {
+            enableMarker($marker);
+          }
+          else {
+            disableMarker($marker);
+          }
         }
       }
     }
@@ -415,8 +431,9 @@
     function selectMurderTime() {
       if (!isMurderTimeSet()) {
         var $this = $(this);
-        $("#murder-time-link").data("murder-time-id", $this.attr("id")).addClass("hide"); 
+        setMurderTimeId($this.attr("id"));
         selectTime($this);
+        $("#murder-time-link").addClass("hide"); 
         $("#murder-location-link").removeClass("hide");
       }
     }
@@ -440,8 +457,30 @@
     }
     
     function showPossibleLocations(startingLocationId, stepsAway) {
-      console.log("TODO: show " + stepsAway + " from murder location " + startingLocationId);
-      
+      if (stepsAway === 1) {
+        var startNode = getNode(startingLocationId);
+        turnOnNodes(getListOfAdjacentNodes(startNode), stepsAway);
+      }
+      else {
+        var previousRankClass = "rank-" + (stepsAway - 1);
+        $("." + previousRankClass).not(".rank-key").each(function(i, marker){
+          turnOnNodes(getListOfAdjacentNodes(getNodeForMarker($(marker))), stepsAway, true);
+        });
+      }
+    }
+    
+    function getNodeForMarker($marker) {
+      return getNode($marker.attr("id"));
+    }
+    
+    function getMarkerForNode(node) {
+      return $("#" + node.id);
+    }
+    
+    function getListOfAdjacentNodes(node) {
+      return $.map(node.adjacentNodes, function(nodeId) {
+        return getNode(nodeId);
+      });
     }
     
     function isNextTimeMarker($marker) {
@@ -472,6 +511,10 @@
     
     function isMurderTimeSet() {
       return $("#murder-time-link").data("murder-time-id") !== "";
+    }
+    
+    function setMurderTimeId(murderTimeId) {
+      $("#murder-time-link").data("murder-time-id", murderTimeId); 
     }
     
     function getMurderLocation() {
@@ -514,6 +557,7 @@
     }
     
     function pickNodes(filterFn) {
+      resetJackTracking();
       var allNodes = getSortedNodes();
       var filteredNodes = $(allNodes).filter(filterFn);
       randomPick(filteredNodes);
@@ -527,24 +571,23 @@
         window.setTimeout(function() { 
           var randomIndex = getRandomInt(min, max);
           var node = nodes[randomIndex];
-          showPossibleSpot(node); 
+          showPossibleHomeSpot(node); 
         }, 350*i);
       }
       
       window.setTimeout(function() { 
         var randomIndex = getRandomInt(min, max);
         var node = nodes[randomIndex];
-        showPossibleSpot(node, true); 
+        showPossibleHomeSpot(node, true); 
       }, 350*iterations);
       
     }
     
-    function showPossibleSpot(node, addBigVisualEffect) {
-      //console.log("showing ", node);
+    function showPossibleHomeSpot(node, addBigVisualEffect) {
       hideMarker($("#location-markers .marker"));
       turnOnNodes([node]);
       if (addBigVisualEffect) {
-        var $nodeEl = $("#"+node.id);
+        var $nodeEl = getMarkerForNode(node);
         $nodeEl.css({
           "width":"200px", 
           "height":"200px", 
@@ -568,6 +611,7 @@
     function showRanks() {
       $("#rank-key-container").show();
       $("#clear-ranks").show();
+      resetJackTracking();
       var nodes = getSortedNodes();
       turnOnNodes(nodes);
       addFrequencyNumbersToRankKeys();
@@ -579,11 +623,26 @@
       $("#clear-ranks").hide();
     }
     
-    function turnOnNodes(nodes) {
+    function disableMarker($marker) {
+      hideMarker($marker).addClass("rank-off");
+    }
+    
+    function enableMarker($marker) {
+      $marker.removeClass("rank-off");
+    }
+    
+    function turnOnNodes(nodes, rank, ignoreNodeIfAlreadyRanked) {
       $.each(nodes, function(i, node) {
-        var $nodeEl = $("#"+node.id);
-        var rank = getRank(node);
-        showMarker($nodeEl.addClass("rank-" + rank));
+        var $nodeEl = getMarkerForNode(node);
+        
+        if (ignoreNodeIfAlreadyRanked === true) {
+          if ($nodeEl.is("[class*='rank-']")) {
+            return;
+          }
+        }
+        
+        var r = rank || getRank(node);
+        showMarker($nodeEl.addClass("rank-" + r));
       });
     }
     
@@ -612,7 +671,7 @@
       $.each(nodes, function(i, node) {
         var rank = getRank(node);
         if (rank === targetRank) {
-          showMarker($("#"+node.id).addClass("rank-" + rank));
+          showMarker(getMarkerForNode(node).addClass("rank-" + rank));
         }
       });
     }
@@ -626,7 +685,7 @@
     }
     
     function hideMarker($el) {
-      $el.addClass("invisible-marker");
+      $el.removeClass().addClass("marker invisible-marker");
       return $el;
     }
     

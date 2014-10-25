@@ -167,7 +167,7 @@ var n144 = new Node({id:144, adjacentNodes: [143,128,129,145,160,173,159], conne
 var n145 = new Node({id:145, adjacentNodes: [144,104,130,131,146,161,160,173,159], connections:4 });
 var n146 = new Node({id:146, adjacentNodes: [145,130,131,133,147,161], connections:2 });
 var n147 = new Node({id:147, adjacentNodes: [146,133,134,111], connections:2 });
-var n148 = new Node({id:148, adjacentNodes: [112,132,113,114,137,138,136,149,163,162], connections:3 });
+var n148 = new Node({id:148, adjacentNodes: [112,135,113,114,137,138,136,149,163,162], connections:3 });
 var n149 = new Node({id:149, adjacentNodes: [148,136,138,139,164,174,163,162], connections:2 });
 var n150 = new Node({id:150, adjacentNodes: [139,116,117,118,151,166,176], connections:2 });
 var n151 = new Node({id:151, adjacentNodes: [150,139,116,117,118,119,121,153,166,176], connections:3 });
@@ -215,6 +215,10 @@ var n192 = new Node({id:192, adjacentNodes: [182,183,184,193,194], connections:2
 var n193 = new Node({id:193, adjacentNodes: [182,183,185,186,187,195,194,184,192], connections:3 });
 var n194 = new Node({id:194, adjacentNodes: [192,184,193,186,187,195], connections:2 });
 var n195 = new Node({id:195, adjacentNodes: [194,193,186,187,185,172,159,173], connections:2 });
+
+function getNode(nodeId) {
+  return eval("n" + nodeId);
+}
 
 function getSortedNodes() {
   function sortNodesBasedOnNumberOfAdjacentNodes(node1, node2) {

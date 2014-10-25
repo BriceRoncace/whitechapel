@@ -394,12 +394,35 @@
           showPossibleSpot(node); 
         }, 250*i);
       }
+      
+      window.setTimeout(function() { 
+        var randomIndex = getRandomInt(min, max);
+        var node = nodes[randomIndex];
+        showPossibleSpot(node, true); 
+      }, 250*iterations);
+      
     }
     
-    function showPossibleSpot(node) {
-      console.log("showing ", node);
+    function showPossibleSpot(node, addBigVisualEffect) {
+      //console.log("showing ", node);
       hide($("#location-markers .marker"));
       turnOnNodes([node]);
+      if (addBigVisualEffect) {
+        var $nodeEl = $("#"+node.id);
+        $nodeEl.css({
+          "width":"200px", 
+          "height":"200px", 
+          "border-radius":"100px", 
+          "margin-left": "-90px", 
+          "margin-top":"-90px" 
+        });
+        $nodeEl.animate({
+          "width": "22px",
+          "height": "22px",
+          "border-radius": "50px",
+          "margin":0
+        }, 2000 );
+      }
     }
     
     function getRandomInt(min, max) {

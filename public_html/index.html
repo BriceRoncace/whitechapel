@@ -142,9 +142,9 @@
       * <a href="#" id="home-epic" class="link">epic</a><br>
     </span>
     
-    <span style="left:225px; top:835px;" id="murder-time-link" data-murder-time-id="" data-current-time-val="" class="link">Select murder <b>time</b></span>
-    <span style="left:220px; top:835px;" id="murder-location-link" data-murder-location-id="" class="link hide">Select murder <b>location</b></span>
-    <span style="left:220px; top:835px;" id="murder-next-link" class="link hide">Click next time marker</span>
+    <span style="left:225px; top:835px; width:100%;" id="murder-time-link" data-murder-time-id="" data-current-time-val="" class="link">Select murder <b>time</b></span>
+    <span style="left:220px; top:835px; width:100%;" id="murder-location-link" data-murder-location-id="" class="link hide">Select murder <b>location</b></span>
+    <span style="left:220px; top:835px; width:100%;" id="murder-next-link" class="link hide">Click next time marker</span>
     
     <div id="time-markers">
       <div id="time-v" data-time-val="0" style="left:240px; top:884px;" class="marker murder-time time-marker invisible-marker"></div>
@@ -451,8 +451,7 @@
       $this = $(this);
       if (isMurderTimeSet() && isMurderLocationSet() && !isAlreadySelected($this) && isNextTimeMarker($this)) {
         selectTime($this);
-        var stepsAway = parseInt(getCurrentTimeVal()) - parseInt(getMurderTimeVal());
-        showPossibleLocations(getMurderLocation(), stepsAway)
+        showPossibleLocations(getMurderLocation(), getMovesAwayFromHome())
       }
     }
     
@@ -467,6 +466,10 @@
           turnOnNodes(getListOfAdjacentNodes(getNodeForMarker($(marker))), stepsAway, true);
         });
       }
+    }
+    
+    function getMovesAwayFromHome() {
+      return parseInt(getCurrentTimeVal()) - parseInt(getMurderTimeVal());
     }
     
     function getNodeForMarker($marker) {
@@ -628,7 +631,7 @@
     }
     
     function enableMarker($marker) {
-      $marker.removeClass("rank-off");
+      showMarker($marker.removeClass("rank-off").addClass("rank-" + getMovesAwayFromHome()));
     }
     
     function turnOnNodes(nodes, rank, ignoreNodeIfAlreadyRanked) {

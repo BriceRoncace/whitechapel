@@ -451,7 +451,7 @@
       $this = $(this);
       if (isMurderTimeSet() && isMurderLocationSet() && !isAlreadySelected($this) && isNextTimeMarker($this)) {
         selectTime($this);
-        showPossibleLocations(getMurderLocation(), getMovesAwayFromHome())
+        showPossibleLocations(getMurderLocation(), getMovesAwayFromMurder())
       }
     }
     
@@ -468,7 +468,7 @@
       }
     }
     
-    function getMovesAwayFromHome() {
+    function getMovesAwayFromMurder() {
       return parseInt(getCurrentTimeVal()) - parseInt(getMurderTimeVal());
     }
     
@@ -631,7 +631,7 @@
     }
     
     function enableMarker($marker) {
-      showMarker($marker.removeClass("rank-off").addClass("rank-" + getMovesAwayFromHome()));
+      showMarker($marker.removeClass("rank-off").addClass("rank-" + getMovesAwayFromMurder()));
     }
     
     function turnOnNodes(nodes, rank, ignoreNodeIfAlreadyRanked) {

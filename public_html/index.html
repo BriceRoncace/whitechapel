@@ -5,119 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href='https://fonts.googleapis.com/css?family=Homemade+Apple' rel='stylesheet' type='text/css'>
-    <style type="text/css">
-      body {
-        font-family: 'Homemade Apple', cursive;
-        margin:0;
-      }
-      
-      .link {
-        color: #8B2500;
-        /*color: #8B0000;*/
-        text-decoration: none;
-        position:absolute;
-      }
-      
-      .marker {
-        position:absolute;
-        width:22px;
-        height:22px;
-        border-radius:50px;
-        opacity:0.55;
-        background: #000;
-        display:block;
-        text-align: left;
-        text-indent: 4px;
-        font-size:15px;
-        color:#000;
-        line-height:25px;
-      }
-
-      .green {
-        background:#006400;
-      }
-
-      .yellow {
-        background:#EEEE00;
-      }
-      
-      #rank-key-container {
-        position:absolute;
-        display:none;
-        width:100%;
-      }
-      
-      .rank-key {
-        position:static;
-        float:left;
-        margin-right:3px;
-      }
-      
-      .rank-1 {
-        background:#76EE00;
-      }
-      .rank-2 {
-        background:#CAFF70;
-      }
-      .rank-3 {
-        background:#FFFF00;
-      }
-      .rank-4 {
-        background:#CDCD00;
-      }
-      .rank-5 {
-        background:#FFA500;
-      }
-      .rank-6 {
-        background:#B8860B;
-      }
-      .rank-7 {
-        background: #CD950C;
-      }
-      .rank-8 {
-        background:#9400D3;
-      }
-      .rank-9 {
-        background:#8B0A50;
-      }
-      .rank-10 {
-        background:#E9967A;
-      }
-      .rank-11 {
-        background:#FF82AB;
-      }
-      .rank-12 {
-        background:#FF0000;
-      }
-      .rank-13 {
-        background:#8B7765;
-      }
-      .rank-14 {
-        background:#000000;
-      }
-      
-      .invisible-marker {
-        background: none;
-      }
-      
-      .red-marker {
-        background: #ff0000;
-      }
-      
-      .show {
-        visibility: visible;
-      }
-      
-      .hide {
-        visibility: hidden;
-      }
-    </style>
+    <link href='css/style.css' rel='stylesheet' type='text/css'>
+    <link id="rank-css" href='css/ranks-std.css' rel='stylesheet' type='text/css'>
   </head>
   <body>
 
     <img id="board" alt="" src="https://dl.dropboxusercontent.com/u/24945431/whitechapel/Letters_from_Whitechapel_003.jpg"/>
-    <a id="rank-link" href="#" style="left:686px; top:30px;" class="link">Location&nbsp;rank</a> <a href="#" class="link" style="display:none; left:820px; top:30px;" id="clear-ranks">[clear]</a>
-    <div id="rank-key-container" style="left:695px; top:55px;">
+    
+    <a id="rank-link" href="#" style="left:680px; top:20px; width:100%;" class="link">Location&nbsp;rank *</a> 
+    <a id="rank-std"  href="#" style="left:818px; top:20px; width:100%;" class="link">style 1</a>
+    <a id="rank-alt1" href="#" style="left:880px; top:20px; width:100%;" class="link">2</a>
+    <a id="rank-alt2" href="#" style="left:900px; top:20px; width:100%;" class="link">3</a>
+    <a id="rank-alt3" href="#" style="left:920px; top:20px; width:100%;" class="link">4</a>
+    <a href="#" class="link" style="display:none; left:915px; top:65px; width:100%;" id="clear-ranks">(clear ranks)</a>
+    <div id="rank-key-container" style="left:695px; top:45px;">
       <div id="rank-1-key" data-rank="1" class="marker rank-key rank-1"></div>
       <div id="rank-2-key" data-rank="2" class="marker rank-key rank-2"></div>
       <div id="rank-3-key" data-rank="3" class="marker rank-key rank-3"></div>
@@ -379,6 +280,12 @@
       $(".rank-key").click(showSelectedRankOnly);
       $("#clear-ranks").click(clearRanks);
       
+      // rank css
+      $("#rank-std").click(function() { setRankCss("css/ranks-std.css");});
+      $("#rank-alt1").click(function() { setRankCss("css/ranks-alt1.css");});
+      $("#rank-alt2").click(function() { setRankCss("css/ranks-alt2.css");});
+      $("#rank-alt3").click(function() { setRankCss("css/ranks-alt3.css");});
+      
       // random home space
       $("#home-easy").click(pickEasyNode);
       $("#home-normal").click(pickNormalNode);
@@ -392,6 +299,15 @@
       // murder location
       $("#location-markers .marker").click(setMurderLocationOrTurnOffMarker);
     });
+    
+    function setRankCss(cssHref) {
+      $("link").each(function(i, link) {
+        $link = $(link);
+        if ($link.attr("href").match(/^css\/ranks-/)) {
+          $link.attr("href",cssHref);
+        }
+      });
+    }
     
     function resetJackTracking() {
       $(".red-marker").removeClass("red-marker").addClass('invisible-marker');

@@ -373,7 +373,7 @@
     
     function showPossibleLocations(startingLocationId, stepsAway) {
       if (stepsAway === 1) {
-        var startNode = getNode(startingLocationId);
+        var startNode = lwc.getNode(startingLocationId);
         turnOnNodes(getListOfAdjacentNodes(startNode), stepsAway);
       }
       else {
@@ -389,7 +389,7 @@
     }
     
     function getNodeForMarker($marker) {
-      return getNode($marker.attr("id"));
+      return lwc.getNode($marker.attr("id"));
     }
     
     function getMarkerForNode(node) {
@@ -398,7 +398,7 @@
     
     function getListOfAdjacentNodes(node) {
       return $.map(node.adjacentNodes, function(nodeId) {
-        return getNode(nodeId);
+        return lwc.getNode(nodeId);
       });
     }
     
@@ -477,7 +477,7 @@
     
     function pickNodes(filterFn) {
       resetJackTracking();
-      var allNodes = getSortedNodes();
+      var allNodes = lwc.getSortedNodes();
       var filteredNodes = $(allNodes).filter(filterFn);
       randomPick(filteredNodes);
     }
@@ -531,7 +531,7 @@
       $("#rank-key-container").show();
       $("#clear-ranks").show();
       resetJackTracking();
-      var nodes = getSortedNodes();
+      var nodes = lwc.getSortedNodes();
       turnOnNodes(nodes);
       addFrequencyNumbersToRankKeys();
     }
@@ -586,7 +586,7 @@
       var $target = $(e.target);
       var targetRank = parseInt($target.data("rank"));
       clearAllMarkers();
-      var nodes = getSortedNodes();
+      var nodes = lwc.getSortedNodes();
       $.each(nodes, function(i, node) {
         var rank = getRank(node);
         if (rank === targetRank) {

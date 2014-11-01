@@ -1,25 +1,356 @@
 var lwc = {};
 
+lwc.init = function() {
+  // rank
+  $("#rank-link").click(lwc.showRanks);
+  $(".rank-key").click(lwc.showSelectedRankOnly);
+  $("#clear-ranks").click(lwc.clearRanks);
+
+  // rank css
+  $("#rank-std").click(function() { lwc.setRankCss("css/ranks-std.css");});
+  $("#rank-alt1").click(function() { lwc.setRankCss("css/ranks-alt1.css");});
+  $("#rank-alt2").click(function() { lwc.setRankCss("css/ranks-alt2.css");});
+  $("#rank-alt3").click(function() { lwc.setRankCss("css/ranks-alt3.css");});
+
+  // random home space
+  $("#home-easy").click(lwc.pickEasyNode);
+  $("#home-normal").click(lwc.pickNormalNode);
+  $("#home-hard").click(lwc.pickHardNode);
+  $("#home-epic").click(lwc.pickEpicNode);
+
+  // murder time and time advancement
+  $("#time-markers .murder-time").click(lwc.selectMurderTime);
+  $("#time-markers .time-marker").click(lwc.advanceTime);
+
+  // murder location
+  $("#location-markers .marker").click(lwc.setMurderLocationOrTurnOffMarker);
+};
+
+lwc.showRanks = function() {
+  $("#rank-key-container").show();
+  $("#clear-ranks").show();
+  lwc.resetJackTracking();
+  var nodes = lwc.getSortedNodes();
+  lwc.turnOnNodes(nodes);
+  lwc.addFrequencyNumbersToRankKeys();
+};
+
+lwc.addFrequencyNumbersToRankKeys = function() {
+  $("#rank-1-key").html($("#location-markers .rank-1").length);
+  $("#rank-2-key").html($("#location-markers .rank-2").length);
+  $("#rank-3-key").html($("#location-markers .rank-3").length);
+  $("#rank-4-key").html($("#location-markers .rank-4").length);
+  $("#rank-5-key").html($("#location-markers .rank-5").length);
+  $("#rank-6-key").html($("#location-markers .rank-6").length);
+  $("#rank-7-key").html($("#location-markers .rank-7").length);
+  $("#rank-8-key").html($("#location-markers .rank-8").length);
+  $("#rank-9-key").html($("#location-markers .rank-9").length);
+  $("#rank-10-key").html($("#location-markers .rank-10").length);
+  $("#rank-11-key").html($("#location-markers .rank-11").length);
+  $("#rank-12-key").html($("#location-markers .rank-12").length);
+  $("#rank-13-key").html($("#location-markers .rank-13").length);
+  $("#rank-14-key").html($("#location-markers .rank-14").length).css("color", "#fff");
+}; 
+
+lwc.clearRanks = function() {
+  lwc.clearAllMarkers();
+  $("#rank-key-container").hide();
+  $("#clear-ranks").hide();
+};
+
+lwc.setRankCss = function(cssHref) {
+  $("link").each(function(i, link) {
+    $link = $(link);
+    if ($link.attr("href").match(/^css\/ranks-/)) {
+      $link.attr("href",cssHref);
+    }
+  });
+};
+
+lwc.turnOnNodes = function(nodes, rank, ignoreNodeIfAlreadyRanked) {
+  $.each(nodes, function(i, node) {
+    var $nodeEl = lwc.getMarkerForNode(node);
+
+    if (ignoreNodeIfAlreadyRanked === true) {
+      if ($nodeEl.is("[class*='rank-']")) {
+        return;
+      }
+    }
+
+    var r = rank || node.getRank();
+    lwc.showMarker($nodeEl.addClass("rank-" + r));
+  });
+};
+
+lwc.resetJackTracking = function() {
+  $(".red-marker").removeClass("red-marker").addClass('invisible-marker');
+  lwc.setCurrentTimeVal("");
+  lwc.setMurderLocation("");
+  lwc.setMurderTimeId("");
+  $("#murder-time-link").removeClass("hide");
+  $("#murder-location-link").addClass("hide");
+  $("#murder-next-link").addClass("hide");
+};
+
+lwc.pickEasyNode = function() {
+  lwc.pickNodes(function(i, node) {
+    return node.getNumberOfAdjacentNodes() >= 11;
+  });
+};
+
+lwc.pickNormalNode = function() {
+  lwc.pickNodes(function(i, node) {
+    var adjacentNodes = node.getNumberOfAdjacentNodes();
+    return adjacentNodes >= 8 && adjacentNodes < 11;
+  });
+};
+
+lwc.pickHardNode = function() {
+  lwc.pickNodes(function(i, node) {
+    var adjacentNodes = node.getNumberOfAdjacentNodes();
+    return adjacentNodes >= 5 && adjacentNodes < 8;
+  });
+};
+
+lwc.pickEpicNode = function() {
+  lwc.pickNodes(function(i, node) {
+    return node.getNumberOfAdjacentNodes() < 5;
+  });
+};
+
+lwc.pickNodes = function(filterFn) {
+  lwc.resetJackTracking();
+  var allNodes = lwc.getSortedNodes();
+  var filteredNodes = $(allNodes).filter(filterFn);
+  lwc.randomPick(filteredNodes);
+};
+    
+lwc.randomPick = function(nodes) {
+  var min = 0;
+  var max = nodes.length - 1;
+  var iterations = 15;
+  for (var i = 0; i < iterations; i++) {
+    window.setTimeout(function() { 
+      var randomIndex = getRandomInt(min, max);
+      var node = nodes[randomIndex];
+      lwc.showPossibleHomeSpot(node); 
+    }, 350*i);
+  }
+
+  window.setTimeout(function() { 
+    var randomIndex = getRandomInt(min, max);
+    var node = nodes[randomIndex];
+    lwc.showPossibleHomeSpot(node, true); 
+  }, 350*iterations);
+  
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+};
+
+lwc.showPossibleHomeSpot = function(node, addBigVisualEffect) {
+  lwc.hideMarker($("#location-markers .marker"));
+  lwc.turnOnNodes([node]);
+  if (addBigVisualEffect) {
+    var $nodeEl = lwc.getMarkerForNode(node);
+    $nodeEl.css({
+      "width":"200px", 
+      "height":"200px", 
+      "border-radius":"100px", 
+      "margin-left": "-90px", 
+      "margin-top":"-90px" 
+    });
+    $nodeEl.animate({
+      "width": "22px",
+      "height": "22px",
+      "border-radius": "50px",
+      "margin":0
+    }, 2000 );
+  }
+};
+
+lwc.setMurderLocationOrTurnOffMarker = function() {
+  if (lwc.isMurderTimeSet()) {
+    if (!lwc.isMurderLocationSet()) {
+      lwc.selectMurderLocation($(this));
+    }
+    else {
+      var $marker = $(this);
+      if ($marker.hasClass("rank-off")) {
+        lwc.enableMarker($marker);
+      }
+      else {
+        lwc.disableMarker($marker);
+      }
+    }
+  }
+};
+    
+lwc.selectMurderLocation = function($marker) {
+  lwc.clearAllMarkers();
+  lwc.setMurderLocation($marker.attr("id"));
+  lwc.turnMarkerRed($marker);
+  $("#murder-location-link").addClass("hide");
+  $("#murder-next-link").removeClass("hide");
+};
+    
+lwc.selectMurderTime = function() {
+  if (!lwc.isMurderTimeSet()) {
+    var $this = $(this);
+    lwc.setMurderTimeId($this.attr("id"));
+    lwc.selectTime($this);
+    $("#murder-time-link").addClass("hide"); 
+    $("#murder-location-link").removeClass("hide");
+  }
+};
+    
+lwc.selectTime = function($marker) {
+  lwc.turnMarkerRed($marker);
+  lwc.setCurrentTimeVal($marker.data("time-val"));
+};
+    
+lwc.turnMarkerRed = function($marker) {
+  $marker.removeClass("invisible-marker").addClass("red-marker");
+};
+    
+lwc.advanceTime = function() {
+  $this = $(this);
+  if (lwc.isMurderTimeSet() && lwc.isMurderLocationSet() && !lwc.isAlreadySelected($this) && lwc.isNextTimeMarker($this)) {
+    lwc.selectTime($this);
+    lwc.showPossibleLocations(lwc.getMurderLocation(), lwc.getMovesAwayFromMurder());
+  }
+};
+    
+lwc.showPossibleLocations = function(startingLocationId, stepsAway) {
+  if (stepsAway === 1) {
+    var startNode = lwc.getNode(startingLocationId);
+    lwc.turnOnNodes(startNode.getAdjacentNodes(), stepsAway);
+  }
+  else {
+    var previousRankClass = "rank-" + (stepsAway - 1);
+    $("." + previousRankClass).not(".rank-key").each(function(i, marker){
+      lwc.turnOnNodes(lwc.getNodeForMarker($(marker)).getAdjacentNodes(), stepsAway, true);
+    });
+  }
+};
+    
+lwc.getMovesAwayFromMurder = function() {
+  return parseInt(lwc.getCurrentTimeVal()) - parseInt(lwc.getMurderTimeVal());
+};
+    
+lwc.isNextTimeMarker = function($marker) {
+  var markerTimeVal = parseInt($marker.data("time-val"));
+  var currentTimeVal = parseInt(lwc.getCurrentTimeVal());
+  return currentTimeVal+1 === markerTimeVal;
+};
+    
+lwc.isAlreadySelected = function($marker) {
+  return $marker.hasClass("red-marker");
+};
+    
+lwc.setCurrentTimeVal = function(value) {
+  $("#murder-time-link").data("current-time-val", value);
+};
+
+lwc.getCurrentTimeVal = function() {
+  return $("#murder-time-link").data("current-time-val");
+};
+
+lwc.getMurderTimeVal = function() {
+  return $("#"+lwc.getMurderTimeId()).data("time-val");
+};
+
+lwc.getMurderTimeId = function() {
+  return $("#murder-time-link").data("murder-time-id");
+};
+
+lwc.isMurderTimeSet = function() {
+  return $("#murder-time-link").data("murder-time-id") !== "";
+};
+
+lwc.setMurderTimeId = function(murderTimeId) {
+  $("#murder-time-link").data("murder-time-id", murderTimeId); 
+};
+
+lwc.getMurderLocation = function() {
+  return $("#murder-location-link").data("murder-location-id");
+};
+
+lwc.isMurderLocationSet = function() {
+  return $("#murder-location-link").data("murder-location-id") !== "";
+};
+
+lwc.setMurderLocation = function(locationId) {
+  $("#murder-location-link").data("murder-location-id", locationId);
+};
+    
+lwc.showSelectedRankOnly = function(event) {
+  var $target = $(event.target);
+  var targetRank = parseInt($target.data("rank"));
+  lwc.clearAllMarkers();
+  var nodes = lwc.getSortedNodes();
+  $.each(nodes, function(i, node) {
+    var rank = node.getRank();
+    if (rank === targetRank) {
+      lwc.showMarker(lwc.getMarkerForNode(node).addClass("rank-" + rank));
+    }
+  });
+};   
+    
+lwc.clearAllMarkers = function() {
+  lwc.hideMarker($("#location-markers .marker"));
+};   
+
+lwc.disableMarker = function($marker) {
+  lwc.hideMarker($marker).addClass("rank-off");
+};
+    
+lwc.enableMarker = function($marker) {    
+  lwc.showMarker($marker.removeClass("rank-off").addClass("rank-" + lwc.getMovesAwayFromMurder()));
+};
+
+lwc.hideMarker = function($marker) {
+  $marker.removeClass().addClass("marker invisible-marker");
+  return $marker;
+};
+
+lwc.showMarker = function($marker) {
+  $marker.removeClass("invisible-marker");
+  return $marker;
+};
+
+lwc.getNodeForMarker = function($marker) {
+  return lwc.getNode($marker.attr("id"));
+};
+
+lwc.getMarkerForNode = function(node) {
+  return $("#" + node.id);
+};
+    
 lwc.getNodeArray = function() {
   function Node(options) {
     var self = this;
 
     self.id = options.id;
     self.connections = options.connections;
-    self.adjacentNodes = options.adjacentNodes.sort();
-    ascendingNumericSort(self.adjacentNodes);
-
-    function ascendingNumericSort(list) {
-      list.sort(function(a,b){return a - b; });
+    self.adjacentNodeIds = options.adjacentNodes.sort();
+    
+    self.getAdjacentNodes = function() {
+      return $.map(self.adjacentNodeIds, function(nodeId) {
+        return lwc.getNode(nodeId);
+      });
     };
 
-    self.numberOfAdjacentNodes = function() {
-      //console.log(self.adjacentNodes);
-      return self.adjacentNodes.length;
+    self.getNumberOfAdjacentNodes = function() {
+      return self.adjacentNodeIds.length;
     };
 
-    self.numberOfConnections = function() {
+    self.getNumberOfConnections = function() {
       return self.connections;
+    };
+    
+    self.getRank = function() {
+      return 16 - self.getNumberOfAdjacentNodes();
     };
   };
 
@@ -230,10 +561,10 @@ lwc.getNode = function(nodeId) {
 
 lwc.getSortedNodes = function() {
   function sortNodesBasedOnNumberOfAdjacentNodes(node1, node2) {
-    if (node1.numberOfAdjacentNodes() ===  node2.numberOfAdjacentNodes()) {
-      return node1.numberOfConnections() >= node2.numberOfConnections() ? -1 : 1;
+    if (node1.getNumberOfAdjacentNodes() ===  node2.getNumberOfAdjacentNodes()) {
+      return node1.getNumberOfConnections() >= node2.getNumberOfConnections() ? -1 : 1;
     }
-    if (node1.numberOfAdjacentNodes() > node2.numberOfAdjacentNodes()) {
+    if (node1.getNumberOfAdjacentNodes() > node2.getNumberOfAdjacentNodes()) {
       return -1;
     }
     else {
